@@ -5,9 +5,14 @@ import type { Todo } from "../types.js";
 const router = Router();
 
 
-router.get("/",async (_,res)=>{
-    const result = await pool.query<Todo>("SELECT * FROM todos ORDER BY id DESC");
-    res.json(result.rows);
-})
+router.get("/todos", async (req, res) => {
+    try {
+      const result = await pool.query("SELECT * FROM todos ORDER BY created_at DESC");
+      res.json(result.rows);
+    } catch (err) {
+      console.error(err);
+      res.status(500).json({ error: "Database error" });
+    }
+  });
 
 export default  router;
