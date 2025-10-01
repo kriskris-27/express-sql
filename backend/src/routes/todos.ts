@@ -5,7 +5,7 @@ import type { Todo } from "../types.js";
 const router = Router();
 
 
-router.get("/todos", async (req, res) => {
+router.get("/", async (req, res) => {
     try {
       const result = await pool.query("SELECT * FROM todos ORDER BY created_at DESC");
       res.json(result.rows);
