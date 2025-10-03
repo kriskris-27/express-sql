@@ -28,4 +28,12 @@ router.post('/' , async(req,res)=>{
       }
 })
 
+router.delete('/:id',async(req,res)=>{
+    const {id} =  req.params
+    const result = await pool.query("DELETE FROM todos WHERE id = $1 RETURNING *",[id]);
+    if(result.rowCount===0)
+        return res.status(404).json({ error: "Todo not found" });
+    res.json({ message: "Todo deleted", todo: result.rows[0] });
+})
+
 export default  router;

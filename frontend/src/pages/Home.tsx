@@ -16,7 +16,6 @@ const Home = () => {
     },[input])
 
     const gettodo = async () =>{
-        console.log(axiosInstance);
         
         const res = await axiosInstance.get("/");
 
@@ -29,6 +28,13 @@ const Home = () => {
         setTodos([...todos,res.data])
         setInput("")
     }   
+
+    const deletetodo = async(id:number)=>{
+        const res=await axiosInstance.delete(`/${id}`);
+        console.log(res);
+        
+        setTodos(todos.filter((todo)=>todo.id!==id))
+    }
   return (
     <div>
       Home
@@ -40,7 +46,8 @@ const Home = () => {
     <h4>TODOS</h4>
     <ul>
      {todos && todos.map((todo) => (
-    <li key={todo.id || todo.task}>{todo.task}</li>
+    <li key={todo.id || todo.task}>{todo.task} 
+    <button onClick={()=>{deletetodo(todo.id)}}>❌</button></li>
   ))}
 </ul>
 
