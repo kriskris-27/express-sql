@@ -2,17 +2,23 @@ services:
 
   backend:
     
-    build: ./backend
+    build:
+      context:  ./backend
+      dockerfile: Dockerfile
     container_name: backend
-    restart: always
+    restart: unless-stopped
     env_file:
       - ./backend/.env
     ports:
       - "5000:5000"
+    networks:
+      - pern-net
 
   frontend:
 
-    build: ./frontend
+    build: 
+      context: ./frontend
+      dockerfile: Dockerfile
     container_name: frontend
     restart: always
     env_file:
@@ -21,3 +27,9 @@ services:
       - "3000:5173"
     depends_on:
       - backend
+    networks:
+      - pern-net 
+
+  networks:
+    pern-net
+    driver:bridge
