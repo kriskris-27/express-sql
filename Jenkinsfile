@@ -1,5 +1,5 @@
 pipeline {
-    agent any 
+    agent any
 
     environment {
         BACKEND_IMG = "pern-backend"
@@ -8,6 +8,7 @@ pipeline {
     }
 
     stages {
+
         stage('Checkout') {
             steps {
                 echo '✅ Checking out source code...'
@@ -19,18 +20,20 @@ pipeline {
             steps {
                 // Backend .env
                 withCredentials([string(credentialsId: 'BACKEND_DB_URL', variable: 'DB_URL')]) {
-                    writeFile file: 'backend/.env', text: """
-PORT=5000
-DATABASE_URL=${DB_URL}
-"""
+                    writeFile file: 'backend/.env', text: 'PORT=5000\nDATABASE_URL=$DB_URL'
                 }
 
                 // Frontend .env
                 withCredentials([string(credentialsId: 'FRONTEND_API_URL', variable: 'API_URL')]) {
-                    writeFile file: 'frontend/.env', text: """
-VITE_API_URL=${API_URL}
-"""
+                    writeFile file: 'frontend/.env', text: 'VITE_API_URL=$API_URL'
                 }
+            }
+        }
+
+        stage('Pre-Cleanup') {
+            steps {
+                echo "🧹 Cleaning up any running containers on port 5000..."
+                bat "\"%GIT_BASH%\" -c \"docker ps -q --filter 'publish=5000' | xargs -r docker rm -f\""
             }
         }
 
@@ -38,7 +41,7 @@ VITE_API_URL=${API_URL}
             steps {
                 echo '🛠️ Building backend Docker image...'
                 dir('backend') {
-                    bat "\"%GIT_BASH%\" -c \"docker build -t ${BACKEND_IMG} .\""
+                    bat "\"%GIT_BASH%\" -c \"docker build -t ${BACKEND_IMG}:${BUILD_NUMBER} .\""
                 }
             }
         }
@@ -47,30 +50,22 @@ VITE_API_URL=${API_URL}
             steps {
                 echo '🛠️ Building frontend Docker image...'
                 dir('frontend') {
-                    bat "\"%GIT_BASH%\" -c \"docker build -t ${FRONTEND_IMG} .\""
+                    bat "\"%GIT_BASH%\" -c \"docker build -t ${FRONTEND_IMG}:${BUILD_NUMBER} .\""
                 }
             }
         }
-        stage('Pre-Cleanup') {
-    steps {
-        echo "🧹 Cleaning up any container using port 5000..."
-        bat "\"%GIT_BASH%\" -c \"for cid in $(docker ps -q --filter 'publish=5000'); do docker rm -f $cid; done\""
-    }
-}
-
 
         stage('Deploy') {
             steps {
                 echo '🚀 Deploying full stack...'
-                        bat "\"%GIT_BASH%\" -c \"docker-compose down --remove-orphans\""
-
+                bat "\"%GIT_BASH%\" -c \"docker-compose down --remove-orphans\""
                 bat "\"%GIT_BASH%\" -c \"docker-compose up -d\""
             }
         }
 
         stage('Cleanup') {
             steps {
-                echo '🧹 Cleaning up unused images...'
+                echo '🧹 Cleaning up unused images and dangling containers...'
                 bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
             }
         }
@@ -84,9 +79,8 @@ VITE_API_URL=${API_URL}
             echo '❌ Deployment failed!'
         }
         always {
-            echo '🔄 Cleanup completed'
-                            bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
-
+            echo '🔄 Final cleanup completed'
+            bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
         }
     }
 }
