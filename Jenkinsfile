@@ -4,6 +4,7 @@ pipeline {
     environment {
         BACKEND_IMG = "pern-backend"
         FRONTEND_IMG = "pern-frontend"
+        GIT_BASH = "C:/Program Files/Git/bin/bash.exe"
     }
 
     stages {
@@ -18,7 +19,7 @@ pipeline {
             steps{
                 echo '🛠️ Building backend Docker image...'
                 dir('backend'){
-                    sh 'docker build -t ${BACKEND_IMG} .'
+                    bat "\"%GIT_BASH%\" -c \"docker build -t ${BACKEND_IMG} .\""
                 }
             }
         }
@@ -27,7 +28,7 @@ pipeline {
             steps{
                 echo '🛠️ Building Frontend Docker image...'
                 dir('frontend'){
-                    sh 'docker build -t ${FRONTEND_IMG} .'
+                    bat "\"%GIT_BASH%\" -c \"docker build -t ${FRONTEND_IMG} .\""
                 }
             }
         }
@@ -35,20 +36,22 @@ pipeline {
         stage('Test'){
             steps{
                 echo '🧪 Running application tests...'
+                // Add your test commands here
             }
         }
 
         stage('Deploy'){
             steps{
                 echo '🚀 Deploying full stack...'
-                sh 'docker-compose up -d'
+                // Use full path for docker-compose if needed
+                bat "\"%GIT_BASH%\" -c \"docker-compose up -d\""
             }
         }
 
         stage('Cleanup') {
             steps {
                 echo '🧹 Cleaning up unused images...'
-                sh 'docker system prune -f'
+                bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
             }
         }
     }
