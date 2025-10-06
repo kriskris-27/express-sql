@@ -51,6 +51,13 @@ VITE_API_URL=${API_URL}
                 }
             }
         }
+        stage('Pre-Cleanup') {
+    steps {
+        echo "🧹 Cleaning up any container using port 5000..."
+        bat "\"%GIT_BASH%\" -c \"for cid in $(docker ps -q --filter 'publish=5000'); do docker rm -f $cid; done\""
+    }
+}
+
 
         stage('Deploy') {
             steps {
