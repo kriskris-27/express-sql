@@ -55,6 +55,8 @@ VITE_API_URL=${API_URL}
         stage('Deploy') {
             steps {
                 echo '🚀 Deploying full stack...'
+                        bat "\"%GIT_BASH%\" -c \"docker-compose down --remove-orphans\""
+
                 bat "\"%GIT_BASH%\" -c \"docker-compose up -d\""
             }
         }
