@@ -76,6 +76,8 @@ VITE_API_URL=${API_URL}
         }
         always {
             echo '🔄 Cleanup completed'
+                            bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
+
         }
     }
 }
