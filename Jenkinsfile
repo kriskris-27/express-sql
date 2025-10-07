@@ -4,11 +4,10 @@ pipeline {
     environment {
         BACKEND_IMG = "pern-backend"
         FRONTEND_IMG = "pern-frontend"
-        GIT_BASH = "C:/Program Files/Git/bin/bash.exe"
+        // No longer need to reference GIT_BASH explicitly in steps
     }
 
     stages {
-
         stage('Checkout') {
             steps {
                 echo '✅ Checking out source code...'
@@ -20,12 +19,12 @@ pipeline {
             steps {
                 // Backend .env
                 withCredentials([string(credentialsId: 'BACKEND_DB_URL', variable: 'DB_URL')]) {
-                    writeFile file: 'backend/.env', text: 'PORT=5000\nDATABASE_URL=$DB_URL'
+                    sh 'echo "PORT=5000\nDATABASE_URL=$DB_URL" > backend/.env'
                 }
 
                 // Frontend .env
                 withCredentials([string(credentialsId: 'FRONTEND_API_URL', variable: 'API_URL')]) {
-                    writeFile file: 'frontend/.env', text: 'VITE_API_URL=$API_URL'
+                    sh 'echo "VITE_API_URL=$API_URL" > frontend/.env'
                 }
             }
         }
@@ -33,7 +32,7 @@ pipeline {
         stage('Pre-Cleanup') {
             steps {
                 echo "🧹 Cleaning up any running containers on port 5000..."
-                bat "\"%GIT_BASH%\" -c \"docker ps -q --filter 'publish=5000' | xargs -r docker rm -f\""
+                sh 'docker ps -q --filter "publish=5000" | xargs -r docker rm -f'
             }
         }
 
@@ -41,7 +40,7 @@ pipeline {
             steps {
                 echo '🛠️ Building backend Docker image...'
                 dir('backend') {
-                    bat "\"%GIT_BASH%\" -c \"docker build -t ${BACKEND_IMG}:${BUILD_NUMBER} .\""
+                    sh "docker build -t ${BACKEND_IMG}:${BUILD_NUMBER} ."
                 }
             }
         }
@@ -50,7 +49,7 @@ pipeline {
             steps {
                 echo '🛠️ Building frontend Docker image...'
                 dir('frontend') {
-                    bat "\"%GIT_BASH%\" -c \"docker build -t ${FRONTEND_IMG}:${BUILD_NUMBER} .\""
+                    sh "docker build -t ${FRONTEND_IMG}:${BUILD_NUMBER} ."
                 }
             }
         }
@@ -58,15 +57,15 @@ pipeline {
         stage('Deploy') {
             steps {
                 echo '🚀 Deploying full stack...'
-                bat "\"%GIT_BASH%\" -c \"docker-compose down --remove-orphans\""
-                bat "\"%GIT_BASH%\" -c \"docker-compose up -d\""
+                sh 'docker-compose down --remove-orphans'
+                sh 'docker-compose up -d'
             }
         }
 
         stage('Cleanup') {
             steps {
                 echo '🧹 Cleaning up unused images and dangling containers...'
-                bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
+                sh 'docker system prune -f'
             }
         }
     }
@@ -80,7 +79,7 @@ pipeline {
         }
         always {
             echo '🔄 Final cleanup completed'
-            bat "\"%GIT_BASH%\" -c \"docker system prune -f\""
+            sh 'docker system prune -f'
         }
     }
 }
