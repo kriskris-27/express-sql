@@ -4,7 +4,6 @@ pipeline {
     environment {
         BACKEND_IMG = "pern-backend"
         FRONTEND_IMG = "pern-frontend"
-        // No longer need to reference GIT_BASH explicitly in steps
     }
 
     stages {

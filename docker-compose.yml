@@ -1,6 +1,6 @@
 services:
   backend:
-    image: pern-backend:${BUILD_NUMBER}
+    image: pern-backend:${BUILD_NUMBER:-latest}
     build:
       context: ./backend
     env_file:
@@ -11,7 +11,7 @@ services:
       - "5000:5000"   # Only if you need to expose to host, optional
 
   frontend:
-    image: pern-frontend:${BUILD_NUMBER}
+    image: pern-frontend:${BUILD_NUMBER:-latest}
     build:
       context: ./frontend
     env_file:
