@@ -8,8 +8,8 @@ services:
     networks:
       - pern-net
     ports:
-      - "5000:5000"   # Only if you need to expose to host, optional
-
+      - "5000:5000"   
+      
   frontend:
     image: pern-frontend:${BUILD_NUMBER:-latest}
     build:
