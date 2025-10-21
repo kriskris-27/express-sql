@@ -33,47 +33,52 @@ const Home = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col items-center p-6">
-      <div className="w-full max-w-md bg-white shadow-lg rounded-2xl p-6 mt-8">
-        <h1 className="text-2xl font-bold text-gray-800 mb-4 text-center">
-          📝 My Todo List
+    <div className="min-h-screen flex flex-col items-center justify-center bg-gradient-to-br from-slate-900 via-indigo-900 to-purple-900 p-6 text-white">
+      {/* Card */}
+      <div className="w-full max-w-md bg-white/10 backdrop-blur-lg rounded-3xl shadow-xl border border-white/20 p-8 transition-all duration-300 hover:shadow-indigo-500/20">
+        {/* Header */}
+        <h1 className="text-4xl font-extrabold mb-6 text-center tracking-tight">
+          📝 <span className="text-indigo-300">My Todo List</span>
         </h1>
 
         {/* Input Section */}
-        <div className="flex items-center space-x-2 mb-4">
+        <div className="flex items-center bg-white/10 rounded-2xl overflow-hidden border border-white/20 focus-within:ring-2 focus-within:ring-indigo-400 mb-6">
           <input
             value={input}
             onChange={(e) => setInput(e.target.value)}
-            placeholder="Enter a new task..."
-            className="flex-1 border border-gray-300 rounded-xl px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500"
+            placeholder="What's next on your list?"
+            className="flex-1 bg-transparent text-white placeholder-gray-400 px-4 py-3 outline-none"
           />
           <button
             onClick={addTodo}
-            className="bg-blue-600 hover:bg-blue-700 text-white font-semibold px-4 py-2 rounded-xl transition"
+            className="bg-indigo-500 hover:bg-indigo-600 active:scale-95 text-white font-semibold px-5 py-3 transition-all duration-300"
           >
             Add
           </button>
         </div>
 
         {/* Todo List */}
-        <h4 className="text-gray-700 font-semibold mb-2">Your Tasks</h4>
-        <ul className="space-y-2">
+        <h4 className="text-indigo-300 font-semibold mb-3 tracking-wide uppercase text-sm">
+          Your Tasks
+        </h4>
+
+        <ul className="space-y-3 max-h-[300px] overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-400 scrollbar-track-transparent">
           {todos.length === 0 ? (
-            <p className="text-gray-500 text-sm italic text-center">
-              No tasks yet. Add one!
+            <p className="text-gray-400 text-center italic py-4">
+              No tasks yet — add one!
             </p>
           ) : (
             todos.map((todo) => (
               <li
                 key={todo.id}
-                className="flex justify-between items-center bg-gray-100 hover:bg-gray-200 rounded-xl px-4 py-2 transition"
+                className="flex justify-between items-center bg-white/10 hover:bg-white/20 rounded-2xl px-4 py-3 backdrop-blur-sm transition-all duration-200"
               >
-                <span className="text-gray-800">{todo.task}</span>
+                <span className="text-gray-100 text-base">{todo.task}</span>
                 <button
                   onClick={() => deleteTodo(todo.id)}
-                  className="text-red-500 hover:text-red-700 transition"
+                  className="text-red-400 hover:text-red-500 active:scale-90 transition"
                 >
-                  ❌
+                  ✖
                 </button>
               </li>
             ))
