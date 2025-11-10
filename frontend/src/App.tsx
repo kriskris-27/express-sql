@@ -4,8 +4,6 @@ export default function App() {
     return (
       <>
       <Approute/>
-      <Approute/>
-
-      </>
+       </>
     )
   }
