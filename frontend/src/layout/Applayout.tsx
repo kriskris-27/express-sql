@@ -19,7 +19,7 @@ const Applayout = () => {
         </div>
       <div className="flex flex-col flex-1 overflow-hidden">
       <header className={`flex-shrink-0 flex justify-between items-center  border-gray-200 px-4 lg:px-10 lg:justify-end h-16 w-full ${isOpen ? 'translate-x-0' : '-translate-x-full'}`}>
-        <h4 className="p-2">Header |</h4>
+        <h4 className="p-2">Header head component |</h4>
         <button onClick={logout}>Logout</button>
       </header>
         <main className="flex-1 overflow-y-auto overflow-x-hidden">
