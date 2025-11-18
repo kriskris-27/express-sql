@@ -1,12 +1,17 @@
+// Jenkins declarative pipeline for building and deploying
+// the PERN (Postgres, Express, React, Node) todo app.
 pipeline {
+    // Run on any available agent with Docker installed.
     agent any
 
+    // Image name prefixes used when building Docker images.
     environment {
         BACKEND_IMG = "pern-backend"
         FRONTEND_IMG = "pern-frontend"
     }
 
     stages {
+        // Pull the latest code from the configured SCM.
         stage('Checkout') {
             steps {
                 echo 'Checking out source code...'
@@ -14,9 +19,10 @@ pipeline {
             }
         }
 
+        // Generate backend and frontend .env files from Jenkins credentials.
         stage('Generate .env files') {
             steps {
-                // Backend .env
+                // Backend .env (port + database URL).
                 withCredentials([string(credentialsId: 'BACKEND_DB_URL', variable: 'DB_URL')]) {
                     sh """
 cat > backend/.env <<EOF
@@ -26,7 +32,7 @@ EOF
 """
                 }
 
-                // Frontend .env
+                // Frontend .env (base API URL used by Vite).
                 withCredentials([string(credentialsId: 'FRONTEND_API_URL', variable: 'API_URL')]) {
                     sh """
 cat > frontend/.env <<EOF
@@ -37,6 +43,7 @@ EOF
             }
         }
 
+        // Stop any containers currently bound to port 5000.
         stage('Pre-Cleanup') {
             steps {
                 echo 'Cleaning up any running containers on port 5000...'
@@ -49,6 +56,7 @@ fi
             }
         }
 
+        // Build the backend Docker image using backend/Dockerfile.
         stage('Build Backend Image') {
             steps {
                 echo 'Building backend Docker image...'
@@ -58,6 +66,7 @@ fi
             }
         }
 
+        // Build the frontend Docker image using frontend/Dockerfile.
         stage('Build Frontend Image') {
             steps {
                 echo 'Building frontend Docker image...'
@@ -67,6 +76,7 @@ fi
             }
         }
 
+        // Bring the stack down and back up with docker-compose.
         stage('Deploy') {
             steps {
                 echo 'Deploying full stack...'
@@ -75,6 +85,7 @@ fi
             }
         }
 
+        // Clean up unused Docker images/containers on the agent.
         stage('Cleanup') {
             steps {
                 echo 'Cleaning up unused images and dangling containers...'
@@ -83,6 +94,7 @@ fi
         }
     }
 
+    // Post-build notifications and final cleanup.
     post {
         success {
             echo 'Deployment successful!'
