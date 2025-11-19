@@ -4,6 +4,15 @@ pipeline {
     // Run on any available agent with Docker installed.
     agent any
 
+    // General pipeline options for better stability and logs.
+    options {
+        timestamps()                    // Prepend timestamps to all logs.
+        disableConcurrentBuilds()       // Avoid overlapping deployments.
+        buildDiscarder(logRotator(numToKeepStr: '20')) // Keep last 20 builds.
+        timeout(time: 30, unit: 'MINUTES')             // Fail long-running builds.
+        skipDefaultCheckout()           // We do an explicit checkout stage.
+    }
+
     // Image name prefixes used when building Docker images.
     environment {
         BACKEND_IMG = "pern-backend"
@@ -16,6 +25,38 @@ pipeline {
             steps {
                 echo 'Checking out source code...'
                 checkout scm
+            }
+        }
+
+        // Install Node.js dependencies for backend and frontend.
+        stage('Install Dependencies') {
+            steps {
+                // Backend dependencies.
+                dir('backend') {
+                    sh 'npm ci || npm install'
+                }
+                // Frontend dependencies.
+                dir('frontend') {
+                    sh 'npm ci || npm install'
+                }
+            }
+        }
+
+        // Basic backend type-check to catch TypeScript errors early.
+        stage('Backend Type Check') {
+            steps {
+                dir('backend') {
+                    sh 'npx tsc --noEmit'
+                }
+            }
+        }
+
+        // Frontend linting to enforce code quality before building images.
+        stage('Frontend Lint') {
+            steps {
+                dir('frontend') {
+                    sh 'npm run lint'
+                }
             }
         }
 
@@ -78,18 +119,14 @@ fi
 
         // Bring the stack down and back up with docker-compose.
         stage('Deploy') {
+            // Only deploy from the main branch.
+            when {
+                branch 'main'
+            }
             steps {
                 echo 'Deploying full stack...'
                 sh 'docker-compose down --remove-orphans'
                 sh 'docker-compose up -d'
-            }
-        }
-
-        // Clean up unused Docker images/containers on the agent.
-        stage('Cleanup') {
-            steps {
-                echo 'Cleaning up unused images and dangling containers...'
-                sh 'docker system prune -f'
             }
         }
     }
